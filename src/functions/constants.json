@@ -1,0 +1,18 @@
+{
+  "DEFAULT_LINE_COLOR": "#cccccc",
+  "AXIS_ENUM": {
+    "x-axis": 0,
+    "y-axis": 1,
+    "z-axis": 2
+  },
+  "AXIS_JOINER_ENUM": {
+    "x-axis": 1,
+    "y-axis": 2,
+    "z-axis": 0
+  },
+  "TYPE": {
+    "Point": "Array",
+    "Axis": ["x-axis", "y-axis", "z-axis"],
+    "Faces": "DrawElement"
+  }
+}

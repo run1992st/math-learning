@@ -1,0 +1,20 @@
+{
+  "arithmetic": [
+    {
+      "title": "Exercise 1",
+      "subtitle": "Draw the 3D arrow and point representing the coordinates (−1, −2, 2) as well as the dashed box that makes the arrow look 3D. Do this drawing by hand for practice, but from now on, we’ll use Python to draw for us."
+    },
+    {
+      "title": "Exercise 2",
+      "subtitle": "There are exactly eight 3D vectors whose coordinates are all either +1 or −1. For instance, (1, −1, 1) is one of these. Plot all of these eight vectors as points. Then figure out how to connect them with line segments using Segment3D objects to form the outline of a cube."
+    },
+    {
+      "title": "Exercise 3",
+      "subtitle": "Draw (4, 0, 3) and (−1, 0, 1) as Arrow3D objects, such that they are placed tip-to-tail in both orders in 3D. What is their vector sum?"
+    },
+    {
+      "title": "Exercise 4",
+      "subtitle": "The following comprehension creates a list of 24 Python vectors: <br><code>from math import sin, cos, pi vs = [(sin(pi*t/6), cos(pi*t/6), 1.0/3) for t in range(0,24)]</code> <br> What is the sum of the 24 vectors? Draw all 24 of them tip-to-tail as Arrow3D objects."
+    }
+  ]
+}
