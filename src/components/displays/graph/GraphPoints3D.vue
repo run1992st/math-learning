@@ -16,6 +16,7 @@
     canvasSideLength: canvasSideLengthGetter,
     displayElements: displayElementsGetter,
     drawingElements: drawingElementsGetter,
+    drawingArrowElements: drawingArrowElementsGetter,
   } = componentsOptions.computed
 
   const canvasSideLength = computed(() => canvasSideLengthGetter(props))
@@ -23,23 +24,21 @@
   const drawingElements = computed(() =>
     drawingElementsGetter(displayElements.value)
   )
+  const drawingArrowElements = computed(() =>
+    drawingArrowElementsGetter(displayElements.value)
+  )
 
   onUpdated(() => {
-    drawElementsToCanvas(
-      guidelineCanvas.value,
-      [],
-      props.drawStyle,
-      props.dimensions
-    )
+    clearCanvas(guidelineCanvas.value)
+    clearCanvas(arrowCanvas.value)
+
+    if (props.arrow) {
+      drawElementsToCanvas(arrowCanvas.value, drawingArrowElements.value)
+    }
     return (
       props.drawPoints &&
       props.drawPoints.length &&
-      drawElementsToCanvas(
-        drawingCanvas.value,
-        drawingElements.value,
-        props.drawStyle,
-        props.dimensions
-      )
+      drawElementsToCanvas(drawingCanvas.value, drawingElements.value)
     )
   })
 
@@ -48,10 +47,12 @@
       canvas,
       drawElements,
       canvasSideLength.value,
-      drawStyle,
-      'random',
-      props.dimensions
+      drawStyle || props.drawStyle,
+      'random'
     )
+  }
+  function clearCanvas(canvas) {
+    drawElementsToCanvas(canvas, [], props.drawStyle, props.dimensions)
   }
   function displayAttrs(point) {
     return {
@@ -64,13 +65,17 @@
 <template>
   <div class="graph-points">
     <DisplayPoint
-      v-for="({ value, position, guideline }, index) in displayElements.flat()"
+      v-for="(
+        { value, position, guideline, arrow }, index
+      ) in displayElements.flat()"
       :key="`point.${value}.${index}`"
       class="point-display"
       :label="value"
       :style="displayAttrs(position)"
       @mouseenter="
-        () => drawElementsToCanvas($refs.guidelineCanvas, guideline, 'dashed')
+        () => {
+          drawElementsToCanvas($refs.guidelineCanvas, guideline, 'dashed')
+        }
       "
     ></DisplayPoint>
     <canvas ref="drawingCanvas"></canvas>

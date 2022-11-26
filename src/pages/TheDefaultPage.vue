@@ -1,5 +1,5 @@
 <script setup>
-  import { ref } from 'vue'
+  import { onMounted, ref } from 'vue'
   import chapters from '@/assets/contents/chapters-exercises.js'
 
   import NavigationHeader from '@/components/pages/default/NavigationHeader.vue'
@@ -7,7 +7,9 @@
   import DisplayGraph3D from '@/components/displays/DisplayGraph3D.vue'
 
   const displayValues = ref({})
-
+  onMounted(() => {
+    handleSelectedExercise(2, 4)
+  })
   function handleSelectedExercise(chapterNumber, exerciseNumber) {
     if (typeof exerciseNumber !== 'number') {
       return

@@ -3,6 +3,7 @@
 
   import GraphGrids from '@/components/displays/graph/GraphGrids.vue'
   import GraphPoints3D from '@/components/displays/graph/GraphPoints3D.vue'
+  import GraphElementDrawer from '@/components/displays/graph/GraphElementDrawer.vue'
 
   const props = defineProps({
     displayOptions: {
@@ -25,6 +26,14 @@
       lineColor: displayOptions.lineColor,
       drawPoints: displayOptions.drawPoints,
       dimensions: displayOptions.dimensions,
+      arrow: displayOptions.arrow,
+    }
+  }
+  function drawingAttrs(displayOptions) {
+    return {
+      drawStyle: displayOptions.drawStyle,
+      lineColor: displayOptions.lineColor,
+      drawPoints: displayOptions.drawPoints,
     }
   }
 </script>
@@ -62,6 +71,23 @@
       v-bind="{
         ...gridsAttrs(displayOptions),
         gridWidth,
+      }"
+      :display-transformations="[360 - SKEW_Y, SKEW_X]"
+    />
+    <GraphElementDrawer
+      class="graph-points"
+      :style="{
+        width: TABLE_WIDTH + 'px',
+        height: TABLE_WIDTH + 'px',
+      }"
+      v-bind="{
+        dimensionData: {
+          ...gridsAttrs(displayOptions),
+          gridWidth,
+        },
+        drawingOptions: {
+          ...drawingAttrs(displayOptions),
+        },
       }"
       :display-transformations="[360 - SKEW_Y, SKEW_X]"
     />

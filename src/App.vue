@@ -1,10 +1,10 @@
 <script setup>
-import TheDefaultPage from '@/pages/TheDefaultPage.vue'
+  import TheDefaultPage from '@/pages/TheDefaultPage.vue'
 </script>
 
 <template>
   <main>
-    <TheDefaultPage />
+    <router-view />
   </main>
 </template>
 

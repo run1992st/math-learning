@@ -14,7 +14,25 @@
     },
     {
       "title": "Exercise 4",
-      "subtitle": "The following comprehension creates a list of 24 Python vectors: <br><code>from math import sin, cos, pi vs = [(sin(pi*t/6), cos(pi*t/6), 1.0/3) for t in range(0,24)]</code> <br> What is the sum of the 24 vectors? Draw all 24 of them tip-to-tail as Arrow3D objects."
+      "subtitle": "Find a vector in the same direction as (−1, −1, 2) but which has length 1."
+    },
+    {
+      "title": "Exercise 5",
+      "subtitle": "What is the dot product of (−1, −1, 1) and (1, 2, 1)? Are these two 3D vectors separated by more than 90°, less than 90°, or exactly 90°?"
+    },
+    {
+      "title": "Exercise 6",
+      "subtitle": "Let u and v be vectors, with |u| = 3.61 and |v| = 1.44. If the angle between u and v is 101.3°, what is u · v ?"
+    },
+    {
+      "title": "Exercise 7",
+      "subtitle": "What is the angle between (1, 1, 1) and (−1, −1, 1) in degrees?"
+    }
+  ],
+  "product": [
+    {
+      "title": "Exercise 1",
+      "subtitle": "What are the coordinates of the cross product of (1, −2, 1) and (−6, 12, −6)"
     }
   ]
 }

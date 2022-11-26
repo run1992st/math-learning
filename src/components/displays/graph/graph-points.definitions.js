@@ -24,6 +24,10 @@ export default () => ({
       type: Number,
       default: 2,
     },
+    arrow: {
+      type: Boolean,
+      default: false,
+    },
   },
   computed: {
     displayElements: (props) => {
@@ -48,6 +52,10 @@ export default () => ({
             point,
             ...PROPERTIES_DTO
           ),
+          arrow: PaintingInstrustment.createDisplayArrow(
+            point,
+            ...PROPERTIES_DTO
+          ),
         }))
       })
       return elements
@@ -56,6 +64,14 @@ export default () => ({
       return displayElements.map((element) => {
         return element.map((point) => point.position)
       })
+    },
+    drawingArrowElements: (displayElements) => {
+      return displayElements
+        .map((element) => {
+          return element.map((point) => point.arrow)
+        })
+        .flat()
+        .flat()
     },
     canvasSideLength: (props) => {
       return props.axisLength * 2 * props.gridWidth

@@ -14,5 +14,13 @@
     "Point": "Array",
     "Axis": ["x-axis", "y-axis", "z-axis"],
     "Faces": "DrawElement"
-  }
+  },
+  "ARROW_HEAD_TIP": [0, 0.4, 0],
+  "ARROW_HEAD_BASE": [
+    [0.15, 0, 0.15],
+    [0.15, 0, -0.15],
+    [-0.15, 0, -0.15],
+    [-0.15, 0, 0.15]
+  ],
+  "AXIS_COLOR": ["red", "green", "blue"]
 }

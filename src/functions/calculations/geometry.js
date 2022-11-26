@@ -2,14 +2,31 @@ export {
   defaultExport as default,
   findCoordination,
   radToDeg,
+  degToRad,
+  findAngle,
+  findAdjacent,
+  findOpposite,
+  findLength,
+}
+const defaultExport = {
+  findCoordination,
+  radToDeg,
   findAdjacent,
   findOpposite,
 }
-const defaultExport = { findCoordination, radToDeg, findAdjacent, findOpposite }
 
 function findCoordination(angle, length) {
   const radian = degToRad(angle)
   return [length * Math.cos(radian), length * Math.sin(radian)]
+}
+function findLength(adjecentLength, oppositeLength) {
+  return Math.sqrt(adjecentLength ** 2 + oppositeLength ** 2)
+}
+
+function findAngle(adjecentLength, oppositeLength) {
+  const radian = Math.atan2(oppositeLength, adjecentLength)
+  const angle = radToDeg(radian)
+  return angle
 }
 
 function findAdjacent(angle, oppositeLength) {

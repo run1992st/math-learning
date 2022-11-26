@@ -2,6 +2,9 @@ import chapter2Exercises from './chapter2/chapter2.exercises.json'
 import chapter2ExercisesFunction from './chapter2/chapter2.exercises-functions.js'
 import chapter3Exercises from './chapter3/chapter3.exercises.json'
 import chapter3ExercisesFunction from './chapter3/chapter3.exercises-functions.js'
+
+import debuggingData from './test.js'
+
 export default [
   {
     title: 'Chapter 2 - Drawing With 2D Vectors',
@@ -20,5 +23,17 @@ export default [
     subtitle: '',
     subItems: chapter3Exercises.arithmetic,
     exerciseFunctions: chapter3ExercisesFunction().arithmetic,
+  },
+  {
+    title: 'Chapter 3 - Cross Product',
+    subtitle: '',
+    subItems: chapter3Exercises.product,
+    exerciseFunctions: chapter3ExercisesFunction().product,
+  },
+  {
+    title: 'Debug',
+    subtitle: '',
+    subItems: debuggingData.lists,
+    exerciseFunctions: debuggingData.debugFunctions(),
   },
 ]

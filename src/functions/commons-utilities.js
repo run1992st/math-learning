@@ -1,4 +1,5 @@
-export { getInteratable, elementGrouper }
+import { standardLogger } from "@/functions/commons/commons-utilities.logger.js"
+export { getInteratable, elementGrouper, standardLogger }
 
 function getInteratable(size) {
   return Array.from({ length: size }, (v, i) => i)

@@ -1,11 +1,26 @@
-import VectorUtilities from './vector-utilities'
-import { DEFAULT_LINE_COLOR } from './constants.json'
+import VectorUtilities, { scalar, isOrigin } from "./vector-utilities"
+import {
+  createRotator3D_XZ,
+  createTranslator3d,
+} from "@/functions/calculations/3d.js"
+import { getShade, getDirectionVector } from "@/functions/painting/shader.js"
+import {
+  DEFAULT_LINE_COLOR,
+  ARROW_HEAD_TIP,
+  ARROW_HEAD_BASE,
+  AXIS_COLOR,
+} from "./constants.json"
 
 export default {
   drawElements3D,
   createGuidelineCoordination,
   drawPointsSets,
   prepareDrawingPoints,
+  createDisplayArrow,
+  createRotationGuide,
+  createArrow,
+  paintFaces3D,
+  getDirectionVector,
 }
 
 function prepareDrawingPoints(
@@ -22,6 +37,71 @@ function prepareDrawingPoints(
     .map(convertToTopLeftAnchored(gridLength))
     .map(scalingFactor(gridWidth))
   return drawingPoints
+}
+
+function createDisplayArrow(
+  point,
+  gridWidth,
+  gridSize,
+  gridLength,
+  displayTransformations,
+  dimensions
+) {
+  if (isOrigin(point)) return []
+  const arrowFaces = createArrow(point)
+  const displayArrow = arrowFaces.map((face) =>
+    prepareDrawingPoints(
+      face,
+      gridWidth,
+      gridSize,
+      gridLength,
+      displayTransformations,
+      dimensions
+    )
+  )
+  return displayArrow
+}
+
+function createArrow([x, y, z], scale = 1) {
+  const arrowHeadFaces = createArrowHead()
+  const [zPiercedRotation, xPiercedRotation] = VectorUtilities.findAngle3d([
+    x,
+    y,
+    z,
+  ])
+  const arrowAndVectorAligner = createRotator3D_XZ(
+    xPiercedRotation,
+    zPiercedRotation - 90
+  )
+  const arrowRepositioner = createTranslator3d(scalar([x, y, z], 0.9))
+  return arrowHeadFaces.map((faces) =>
+    faces
+      .map(arrowAndVectorAligner)
+      .map(arrowRepositioner)
+      .map((point) => scalar(point, scale))
+  )
+}
+
+function createArrowHead() {
+  const base = ARROW_HEAD_BASE
+  const tip = ARROW_HEAD_TIP
+  const arrowSide_1 = [base[0], base[1], tip]
+  const arrowSide_2 = [base[1], base[2], tip]
+  const arrowSide_3 = [base[2], base[3], tip]
+  const arrowSide_4 = [base[3], base[0], tip]
+
+  const elements = [base, arrowSide_1, arrowSide_2, arrowSide_3, arrowSide_4]
+  return elements
+}
+
+function createRotationGuide() {
+  const base = [0, 0, 0]
+  const xGuide = [base, [3, 0, 0]]
+  const yGuide = [base, [0, 3, 0]]
+  const zGuide = [base, [0, 0, 3]]
+
+  const elements = [xGuide, yGuide, zGuide]
+  return elements
 }
 
 function createGuidelineCoordination(
@@ -41,8 +121,10 @@ function createGuidelineCoordination(
   ]
   const xyzGuide = [
     [0, 0, z],
-    [x, 0, z],
+    [0, y, z],
     [x, y, z],
+    [0, y, z],
+    [0, y, 0],
   ]
   const displayXYGuideline = prepareDrawingPoints(
     xyGuide,
@@ -69,27 +151,91 @@ function drawPointsSets(
   elements,
   canvasSideLength,
   drawStyle,
-  lineColor
+  lineColor,
+  fillColor
 ) {
   const ctx = canvasPreparation(canvas, {
     canvasWidth: canvasSideLength,
     canvasHeight: canvasSideLength,
   })
-  elements.forEach((displayPoints) => {
-    const params = [ctx, displayPoints, canvasSideLength, drawStyle, lineColor]
+  elements.forEach((displayPoints, index) => {
+    const params = [
+      ctx,
+      displayPoints,
+      canvasSideLength,
+      drawStyle,
+      drawStyle === "axis" ? AXIS_COLOR[index] : lineColor,
+      fillColor,
+    ]
     return drawElements3D(...params)
   })
 }
 
-function drawElements3D(ctx, points, canvasSideLength, drawStyle, lineColor) {
-  const drawingPoints = points
+function paintFaces3D(
+  canvas,
+  faces,
+  canvasSideLength,
+  drawStyle,
+  lineColor,
+  fillColor
+) {
+  const ctx = canvasPreparation(canvas, {
+    canvasWidth: canvasSideLength,
+    canvasHeight: canvasSideLength,
+  })
+  faces.forEach((displayPoints, index) => {
+    const params = [
+      ctx,
+      displayPoints,
+      canvasSideLength,
+      drawStyle,
+      drawStyle === "axis" ? AXIS_COLOR[index] : lineColor,
+      fillColor,
+    ]
+    return paintShape(...params)
+  })
+}
 
+function paintShape(
+  ctx,
+  face,
+  canvasSideLength,
+  drawStyle,
+  lineColor,
+  fillColor
+) {
+  const direction = face.direction
+  drawLine(ctx, direction, {
+    canvasWidth: canvasSideLength,
+    canvasHeight: canvasSideLength,
+    drawStyle,
+    lineColor,
+  })
+  if (fillColor) {
+    ctx.fillStyle = getShade(direction, fillColor)
+    ctx.fill()
+  }
+}
+
+function drawElements3D(
+  ctx,
+  points,
+  canvasSideLength,
+  drawStyle,
+  lineColor,
+  fillColor
+) {
+  const drawingPoints = points
   drawLine(ctx, drawingPoints, {
     canvasWidth: canvasSideLength,
     canvasHeight: canvasSideLength,
     drawStyle,
     lineColor,
   })
+  if (fillColor) {
+    ctx.fillStyle = getShade(drawingPoints, fillColor)
+    ctx.fill()
+  }
 }
 
 function drawLine(ctx, paintedPoints, { drawStyle, lineColor }) {
@@ -109,8 +255,8 @@ function transfromTo3D([skewX, skewY, skewZ]) {
 function canvasPreparation(canvas, { canvasWidth, canvasHeight }) {
   canvas.height = canvasHeight
   canvas.width = canvasWidth
-  const ctx = canvas.getContext('2d')
-  ctx.strokeStyle = '#cccccc'
+  const ctx = canvas.getContext("2d")
+  ctx.strokeStyle = "#cccccc"
   return ctx
 }
 
@@ -119,20 +265,20 @@ function drawLineToCanvas(paintedPoints, ctx, { drawStyle, lineColor }) {
   ctx.beginPath()
   ctx.moveTo(...startPoint)
   ctx.strokeStyle =
-    lineColor === 'random'
+    lineColor === "random"
       ? colorRandomizer()
       : lineColor
       ? lineColor
       : DEFAULT_LINE_COLOR
-  if (drawStyle === 'dashed') {
+  if (drawStyle === "dashed") {
     ctx.setLineDash([4, 4])
-    ctx.strokeStyle = '#cccccc88'
+    ctx.strokeStyle = "#cccccc88"
   }
 
   paintedPoints.slice(1).forEach((point) => {
     ctx.lineTo(...point)
   })
-  if (drawStyle === 'closed') ctx.closePath()
+  if (drawStyle === "closed") ctx.closePath()
   ctx.stroke()
 }
 
@@ -165,4 +311,10 @@ function colorRandomizer() {
   return `#${rChannel.toString(16)}${gChannel.toString(16)}${bChannel.toString(
     16
   )}`
+}
+
+function arrowLogger(zPiercedRotation, xPiercedRotation) {
+  console.log("Create Arrow")
+  console.log("directionAngle: zPiercedRotation  ->", zPiercedRotation)
+  console.log("directionAngle: xPiercedRotation  ->", xPiercedRotation)
 }

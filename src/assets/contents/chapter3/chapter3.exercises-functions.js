@@ -1,30 +1,7 @@
-import { BOX } from './chapter3.data.js'
-import { create3DForm } from '@/functions/shape/form.utilities.js'
+import arithmetic from './chapter3.exercises.arithmetic'
+import product from './chapter3.exercises.product'
 
 export default () => ({
-  arithmetic: [
-    () => {
-      return {
-        dimensions: 3,
-        points: [[-1, -2, 2]],
-        drawPoints: [
-          [
-            [0, 0, 0],
-            [-1, -2, 2],
-          ],
-        ],
-        drawStyle: 'line',
-      }
-    },
-    () => {
-      const vertices = BOX
-      const allDisectedFaces = create3DForm(vertices)
-      return {
-        dimensions: 3,
-        drawPoints: allDisectedFaces,
-        drawStyle: 'closed',
-        lineColor: 'random',
-      }
-    },
-  ],
+  arithmetic: arithmetic(),
+  product: product(),
 })
