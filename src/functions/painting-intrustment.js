@@ -5,19 +5,17 @@ import {
 } from "@/functions/calculations/3d.js"
 import { getShade, getDirectionVector } from "@/functions/painting/shader.js"
 import {
-  DEFAULT_LINE_COLOR,
-  ARROW_HEAD_TIP,
-  ARROW_HEAD_BASE,
-  AXIS_COLOR,
-} from "./constants.json"
+  createGuideline,
+  createRotationGuide,
+  createArrowHead,
+} from "@/functions/painting/models.js"
+import { DEFAULT_LINE_COLOR, AXIS_COLOR } from "./constants.json"
 
 export default {
-  drawElements3D,
   createGuidelineCoordination,
   drawPointsSets,
   prepareDrawingPoints,
   createDisplayArrow,
-  createRotationGuide,
   createArrow,
   paintFaces3D,
   getDirectionVector,
@@ -82,28 +80,6 @@ function createArrow([x, y, z], scale = 1) {
   )
 }
 
-function createArrowHead() {
-  const base = ARROW_HEAD_BASE
-  const tip = ARROW_HEAD_TIP
-  const arrowSide_1 = [base[0], base[1], tip]
-  const arrowSide_2 = [base[1], base[2], tip]
-  const arrowSide_3 = [base[2], base[3], tip]
-  const arrowSide_4 = [base[3], base[0], tip]
-
-  const elements = [base, arrowSide_1, arrowSide_2, arrowSide_3, arrowSide_4]
-  return elements
-}
-
-function createRotationGuide() {
-  const base = [0, 0, 0]
-  const xGuide = [base, [3, 0, 0]]
-  const yGuide = [base, [0, 3, 0]]
-  const zGuide = [base, [0, 0, 3]]
-
-  const elements = [xGuide, yGuide, zGuide]
-  return elements
-}
-
 function createGuidelineCoordination(
   [x, y, z],
   gridWidth,
@@ -112,20 +88,8 @@ function createGuidelineCoordination(
   displayTransformations,
   dimensions
 ) {
-  const xyGuide = [
-    [x, 0, 0],
-    [x, y, 0],
-    [x, y, z],
-    [x, y, 0],
-    [0, y, 0],
-  ]
-  const xyzGuide = [
-    [0, 0, z],
-    [0, y, z],
-    [x, y, z],
-    [0, y, z],
-    [0, y, 0],
-  ]
+  const [xyGuide, xyzGuide] = createGuideline([x, y, z])
+
   const displayXYGuideline = prepareDrawingPoints(
     xyGuide,
     gridWidth,
@@ -311,10 +275,4 @@ function colorRandomizer() {
   return `#${rChannel.toString(16)}${gChannel.toString(16)}${bChannel.toString(
     16
   )}`
-}
-
-function arrowLogger(zPiercedRotation, xPiercedRotation) {
-  console.log("Create Arrow")
-  console.log("directionAngle: zPiercedRotation  ->", zPiercedRotation)
-  console.log("directionAngle: xPiercedRotation  ->", xPiercedRotation)
 }

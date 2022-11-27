@@ -1,11 +1,9 @@
 <script setup>
   import { ref, onUpdated, computed } from 'vue'
   import GraphDrawerDefinition from './graph-drawer.definitions.js'
-
   import PaintingInstrustment from '@/functions/painting-intrustment'
 
   const drawingCanvas = ref()
-
   const componentsOptions = GraphDrawerDefinition()
   const props = defineProps(GraphDrawerDefinition().props)
 
@@ -30,7 +28,6 @@
   })
 
   function paintElementsToCanvas(canvas, paintingElements, drawStyle) {
-    console.log('paintingElements', paintingElements)
     PaintingInstrustment.paintFaces3D(
       canvas,
       paintingElements,
