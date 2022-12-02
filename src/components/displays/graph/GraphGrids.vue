@@ -1,60 +1,43 @@
 <script setup>
-  import { computed } from 'vue'
-  import { getInteratable } from '@/functions/commons-utilities.js'
-  import GraphGridMesh from '@/components/displays/graph/GraphGridMesh.vue'
-  import GraphGridAxis from '@/components/displays/graph/GraphGridAxis.vue'
+  import GraphGrid from '@/components/displays/graph/GraphGrid.vue'
 
   const props = defineProps({
-    tableWidth: { type: Number, default: 800 },
-    gridSize: { type: Array, default: () => [1, 1] },
-    axisLength: { type: Number, default: 10 },
-    showLegend: { type: Boolean, default: true },
+    gridsData: { type: Object, default: () => ({ tableWidth: 600 }) },
+    dimensions: { type: Number, default: 2 },
   })
-
-  const gridWidth = computed(() => props.tableWidth / (props.axisLength * 2))
-  const [xMarkers, yMarkers] = [
-    computed(() => createMarkerArray(props.axisLength * 2, props.gridSize[0])),
-    computed(() => createMarkerArray(props.axisLength * 2, props.gridSize[1])),
-  ]
-
-  function createMarkerArray(partitionSize, scale) {
-    const pointsSequences = getInteratable(partitionSize + 1)
-    const scaledMarkerSequences = pointsSequences.map(
-      (point) => (point - props.axisLength) * scale
-    )
-    return scaledMarkerSequences
-  }
 </script>
 
 <template>
-  <div
-    class="graph-grids"
-    :style="{ width: tableWidth + 'px', height: tableWidth + 'px' }"
-  >
-    <GraphGridMesh
-      class="graph-grid-mesh"
-      :grid-width="gridWidth"
-    />
-    <GraphGridAxis
-      class="graph-grid-axis"
-      :x-axis-marker="xMarkers"
-      :y-axis-marker="yMarkers"
-      :display-options="{ legend: showLegend }"
-    />
-  </div>
+  <GraphGrid
+    class="graph-plane plane-xy"
+    :style="{
+      transform:
+        dimensions > 2
+          ? `skew(${gridsData.skew[0]}deg, ${gridsData.skew[1]}deg)`
+          : '',
+    }"
+    v-bind="gridsData"
+  />
+  <GraphGrid
+    v-if="dimensions > 2"
+    class="graph-plane plane-zy"
+    :style="{
+      transform: `skew(0deg, ${gridsData.skew[1]}deg)`,
+    }"
+    v-bind="gridsData"
+  />
 </template>
 
 <style lang="scss" scoped>
-  .graph-grids {
-    background: #ffffff02;
-    border: 1px solid #ffffff20;
-    * {
-      user-select: none;
-    }
-    .graph-grid-mesh,
-    .graph-grid-axis {
-      position: absolute;
-      inset: 0 0 0 0;
-    }
+  .graph-plane {
+    position: absolute;
+  }
+  .plane-xy {
+    z-index: 1;
+    border: #cdaacc50 1px solid;
+  }
+  .plane-zy {
+    transform: skew(0deg, 20deg);
+    border: #cdaa8850 1px solid;
   }
 </style>

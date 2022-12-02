@@ -31,7 +31,11 @@
       </div>
     </div>
     <div class="page-content">
-      <DisplayGraph3D :display-options="displayValues" />
+      <DisplayGraph3D
+        :draw-points="displayValues.drawPoints"
+        :display-options="displayValues"
+        :dimensions="displayValues.dimensions || 2"
+      />
     </div>
   </div>
 </template>

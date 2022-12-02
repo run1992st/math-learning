@@ -1,8 +1,8 @@
 import { ARROW_HEAD_TIP, ARROW_HEAD_BASE } from "@/functions/constants.json"
 
-export { createRotationGuide, createArrowHead, createGuideline }
+export { axisGuide, arrowHead, guidelineBoxes }
 
-function createRotationGuide() {
+function axisGuide() {
   const base = [0, 0, 0]
   const xGuide = [base, [3, 0, 0]]
   const yGuide = [base, [0, 3, 0]]
@@ -12,7 +12,7 @@ function createRotationGuide() {
   return elements
 }
 
-function createArrowHead() {
+function arrowHead() {
   const base = ARROW_HEAD_BASE
   const tip = ARROW_HEAD_TIP
   const arrowSide_1 = [base[0], base[1], tip]
@@ -24,7 +24,7 @@ function createArrowHead() {
   return elements
 }
 
-function createGuideline([x, y, z]) {
+function guidelineBoxes([x, y, z]) {
   const xyGuide = [
     [x, 0, 0],
     [x, y, 0],

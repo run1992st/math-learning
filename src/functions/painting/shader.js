@@ -19,5 +19,5 @@ function getShade(face, color) {
 function getDirectionVector(face) {
   const [leg1, leg2] = [subtract(face[0], face[1]), subtract(face[0], face[2])]
   const direction = cross(leg1, leg2)
-  return toUnit(direction)
+  return scalar(toUnit(direction), 4)
 }

@@ -97,7 +97,6 @@ export default () => [
     const vectorU = [1, 1, 1]
     const vectorV = [-1, -1, 1]
     const angle = angleBetween(vectorU, vectorV)
-    console.log('angle', angle)
     return {
       dimensions: 3,
       drawPoints: [

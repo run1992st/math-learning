@@ -1,230 +1,82 @@
-import VectorUtilities, { scalar, isOrigin } from "./vector-utilities"
-import {
-  createRotator3D_XZ,
-  createTranslator3d,
-} from "@/functions/calculations/3d.js"
+import { isOrigin } from "@/functions/vector-utilities"
+import { createTranslator3d } from "@/functions/calculations/3d.js"
 import { getShade, getDirectionVector } from "@/functions/painting/shader.js"
+import { createArrow, createGuideline } from "@/functions/painting/presets.js"
 import {
-  createGuideline,
-  createRotationGuide,
-  createArrowHead,
-} from "@/functions/painting/models.js"
+  transfromTo3D,
+  transfromByGridSize,
+  convertToTopLeftAnchored,
+  scalingFactor,
+  colorRandomizer,
+} from "@/functions/painting/transformer.js"
 import { DEFAULT_LINE_COLOR, AXIS_COLOR } from "./constants.json"
 
 export default {
-  createGuidelineCoordination,
-  drawPointsSets,
+  paintShapesToCanvas,
   prepareDrawingPoints,
   createDisplayArrow,
-  createArrow,
-  paintFaces3D,
-  getDirectionVector,
+  createDisplayGuideline,
+  createDisplayDirectionVector,
+}
+
+function prepareFaces(faces, displayData) {
+  return faces.map((face) => prepareDrawingPoints(face, displayData))
 }
 
 function prepareDrawingPoints(
   points,
-  gridWidth,
-  gridSize,
-  gridLength,
-  displayTransformations,
-  dimensions
+  { gridWidth, gridSize, axisLength, skew, dimensions }
 ) {
   const drawingPoints = points
-    .map(dimensions === 3 ? transfromTo3D(displayTransformations) : (v) => v)
+    .map(dimensions === 3 ? transfromTo3D([360 - skew[1], skew[0]]) : (v) => v)
     .map(transfromByGridSize(gridSize))
-    .map(convertToTopLeftAnchored(gridLength))
+    .map(convertToTopLeftAnchored(axisLength))
     .map(scalingFactor(gridWidth))
   return drawingPoints
 }
 
-function createDisplayArrow(
-  point,
-  gridWidth,
-  gridSize,
-  gridLength,
-  displayTransformations,
-  dimensions
-) {
+// TODO: Consolidate to Display Element builder
+function createDisplayArrow(point, displayData) {
   if (isOrigin(point)) return []
   const arrowFaces = createArrow(point)
-  const displayArrow = arrowFaces.map((face) =>
-    prepareDrawingPoints(
-      face,
-      gridWidth,
-      gridSize,
-      gridLength,
-      displayTransformations,
-      dimensions
-    )
-  )
-  return displayArrow
+  return prepareFaces(arrowFaces, displayData)
 }
 
-function createArrow([x, y, z], scale = 1) {
-  const arrowHeadFaces = createArrowHead()
-  const [zPiercedRotation, xPiercedRotation] = VectorUtilities.findAngle3d([
-    x,
-    y,
-    z,
-  ])
-  const arrowAndVectorAligner = createRotator3D_XZ(
-    xPiercedRotation,
-    zPiercedRotation - 90
-  )
-  const arrowRepositioner = createTranslator3d(scalar([x, y, z], 0.9))
-  return arrowHeadFaces.map((faces) =>
-    faces
-      .map(arrowAndVectorAligner)
-      .map(arrowRepositioner)
-      .map((point) => scalar(point, scale))
-  )
+function createDisplayGuideline(point, displayData) {
+  const guidelinesFaces = createGuideline(point)
+  return prepareFaces(guidelinesFaces, displayData)
+}
+function createDisplayDirectionVector(points, displayData) {
+  // const translator = createTranslator3d(points[0])
+  const directionLine = [[[0, 0, 0], getDirectionVector(points)]]
+  return prepareFaces(directionLine, displayData)
 }
 
-function createGuidelineCoordination(
-  [x, y, z],
-  gridWidth,
-  gridSize,
-  gridLength,
-  displayTransformations,
-  dimensions
-) {
-  const [xyGuide, xyzGuide] = createGuideline([x, y, z])
-
-  const displayXYGuideline = prepareDrawingPoints(
-    xyGuide,
-    gridWidth,
-    gridSize,
-    gridLength,
-    displayTransformations,
-    dimensions
-  )
-  const displayXYZGuideline = prepareDrawingPoints(
-    xyzGuide,
-    gridWidth,
-    gridSize,
-    gridLength,
-    displayTransformations,
-    dimensions
-  )
-  const axisGuidePoints = [displayXYGuideline, displayXYZGuideline]
-  return axisGuidePoints
-}
-
-function drawPointsSets(
-  canvas,
-  elements,
-  canvasSideLength,
-  drawStyle,
-  lineColor,
-  fillColor
-) {
+function paintShapesToCanvas(canvas, elements, drawingOptions) {
   const ctx = canvasPreparation(canvas, {
-    canvasWidth: canvasSideLength,
-    canvasHeight: canvasSideLength,
+    canvasWidth: drawingOptions.canvasSideLength,
+    canvasHeight: drawingOptions.canvasSideLength,
   })
-  elements.forEach((displayPoints, index) => {
-    const params = [
-      ctx,
-      displayPoints,
-      canvasSideLength,
-      drawStyle,
-      drawStyle === "axis" ? AXIS_COLOR[index] : lineColor,
-      fillColor,
-    ]
-    return drawElements3D(...params)
+  elements.forEach((displayPoints) => {
+    return paintShape(ctx, displayPoints, drawingOptions)
   })
 }
 
-function paintFaces3D(
-  canvas,
-  faces,
-  canvasSideLength,
-  drawStyle,
-  lineColor,
-  fillColor
-) {
-  const ctx = canvasPreparation(canvas, {
-    canvasWidth: canvasSideLength,
-    canvasHeight: canvasSideLength,
-  })
-  faces.forEach((displayPoints, index) => {
-    const params = [
-      ctx,
-      displayPoints,
-      canvasSideLength,
-      drawStyle,
-      drawStyle === "axis" ? AXIS_COLOR[index] : lineColor,
-      fillColor,
-    ]
-    return paintShape(...params)
-  })
-}
-
-function paintShape(
-  ctx,
-  face,
-  canvasSideLength,
-  drawStyle,
-  lineColor,
-  fillColor
-) {
-  const direction = face.direction
-  drawLine(ctx, direction, {
-    canvasWidth: canvasSideLength,
-    canvasHeight: canvasSideLength,
+function paintShape(ctx, face, { drawStyle, lineColor, fillColor }) {
+  const direction = face.direction || []
+  const points = face.points || face
+  drawLineToCanvas(ctx, points, {
     drawStyle,
     lineColor,
   })
   if (fillColor) {
-    ctx.fillStyle = getShade(direction, fillColor)
+    const shade = getShade(direction, fillColor)
+    ctx.fillStyle = shade
     ctx.fill()
   }
 }
 
-function drawElements3D(
-  ctx,
-  points,
-  canvasSideLength,
-  drawStyle,
-  lineColor,
-  fillColor
-) {
-  const drawingPoints = points
-  drawLine(ctx, drawingPoints, {
-    canvasWidth: canvasSideLength,
-    canvasHeight: canvasSideLength,
-    drawStyle,
-    lineColor,
-  })
-  if (fillColor) {
-    ctx.fillStyle = getShade(drawingPoints, fillColor)
-    ctx.fill()
-  }
-}
-
-function drawLine(ctx, paintedPoints, { drawStyle, lineColor }) {
-  drawLineToCanvas(paintedPoints, ctx, { drawStyle, lineColor })
-}
-
-function transfromTo3D([skewX, skewY, skewZ]) {
-  const vectorSkewer = VectorUtilities.createSkewer(skewX, skewY)
-  return (coordinateNumbers) => {
-    const [x, y, z] = coordinateNumbers
-    const [skewedX, skewedY] = vectorSkewer([x, y])
-    const result = [skewedX, skewedY + z, z]
-    return result
-  }
-}
-
-function canvasPreparation(canvas, { canvasWidth, canvasHeight }) {
-  canvas.height = canvasHeight
-  canvas.width = canvasWidth
-  const ctx = canvas.getContext("2d")
-  ctx.strokeStyle = "#cccccc"
-  return ctx
-}
-
-function drawLineToCanvas(paintedPoints, ctx, { drawStyle, lineColor }) {
+function drawLineToCanvas(ctx, paintedPoints, { drawStyle, lineColor }) {
   const startPoint = paintedPoints[0]
   ctx.beginPath()
   ctx.moveTo(...startPoint)
@@ -246,33 +98,10 @@ function drawLineToCanvas(paintedPoints, ctx, { drawStyle, lineColor }) {
   ctx.stroke()
 }
 
-function transfromByGridSize([gridXScale, gridYScale]) {
-  return (coordinateNumbers) => {
-    const [x, y] = coordinateNumbers
-    return [x / gridXScale, y / gridYScale]
-  }
-}
-
-function convertToTopLeftAnchored(fractionLength) {
-  return (coordinateNumbers) => {
-    const axisLength = fractionLength / 2
-    const [xCentered, yCentered] = coordinateNumbers
-    return [xCentered + axisLength, axisLength - yCentered]
-  }
-}
-
-function scalingFactor(factor) {
-  return (coordinateNumbers) => {
-    const [x, y] = coordinateNumbers
-    return [x * factor, y * factor]
-  }
-}
-
-function colorRandomizer() {
-  const rChannel = Math.ceil(Math.random() * 255)
-  const gChannel = Math.ceil(Math.random() * 255)
-  const bChannel = Math.ceil(Math.random() * 255)
-  return `#${rChannel.toString(16)}${gChannel.toString(16)}${bChannel.toString(
-    16
-  )}`
+function canvasPreparation(canvas, { canvasWidth, canvasHeight }) {
+  canvas.height = canvasHeight
+  canvas.width = canvasWidth
+  const ctx = canvas.getContext("2d")
+  ctx.strokeStyle = "#cccccc"
+  return ctx
 }

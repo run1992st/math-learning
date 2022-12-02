@@ -1,87 +1,63 @@
 import PaintingInstrustment from '@/functions/painting-intrustment'
 export default () => ({
   props: {
-    dimensionData: {
-      type: Object,
-      required: true,
-      validation: (v) => {
-        Object.keys(v).map((key) =>
-          [
-            'gridSize',
-            'axisLength',
-            'gridWidth',
-            'displayTransformations',
-            'dimensions',
-          ].includes(key)
-        )
-      },
-    },
+    drawingFaces: { type: Array, default: null },
     drawingOptions: {
       type: Object,
       required: true,
       validation: (v) => {
         Object.keys(v).map((key) =>
-          ['drawPoints', 'drawStyle', 'lineColor'].includes(key)
+          ['drawPoints', 'drawStyle', 'lineColor', 'fill'].includes(key)
         )
       },
     },
-    displayTransformations: {
-      type: Array,
-      default: [340, -40, 0],
+    displayData: {
+      type: Object,
+      required: true,
+      validation: (v) => {
+        Object.keys(v).map((key) =>
+          ['gridSize', 'axisLength', 'gridWidth', 'dimensions'].includes(key)
+        )
+      },
     },
+    currentPoint: { type: Array, default: null },
+    currentFace: { type: Object, default: null },
   },
   computed: {
-    displayElements: (props) => {
-      if (
-        !props.drawingOptions.drawPoints ||
-        !props.drawingOptions.drawPoints.length
+    paintingElements: (paintingFaces, props) => {
+      return paintingFaces.map(({ points, direction }) => ({
+        points: points.map((point) => point.position),
+        direction,
+      }))
+    },
+    drawingElements: (faces) => {
+      return faces.map((element) => {
+        return element.map((point) => point.position)
+      })
+    },
+    drawingArrowElements: (faces) => {
+      return faces
+        .map((element) => {
+          return element.map((point) => point.arrow)
+        })
+        .flat()
+        .flat()
+    },
+    dashedGuideline(currentPoint, displayData) {
+      const guideline = PaintingInstrustment.createDisplayGuideline(
+        currentPoint,
+        displayData
       )
+      return guideline
+    },
+    directionVector(currentFace, displayData) {
+      if (!currentFace || !currentFace.length || currentFace.length < 3)
         return []
-      const drawPoints = props.drawingOptions.drawPoints
-      const PROPERTIES_DTO = [
-        props.dimensionData.gridWidth,
-        props.dimensionData.gridSize,
-        props.dimensionData.axisLength * 2,
-        props.displayTransformations,
-        props.dimensionData.dimensions,
-      ]
-      const elements = drawPoints.map((drawPoints) => {
-        const positions = PaintingInstrustment.prepareDrawingPoints(
-          drawPoints,
-          ...PROPERTIES_DTO
-        )
-        return drawPoints.map((point, index) => ({
-          value: point,
-          position: positions[index],
-        }))
-      })
-      return elements
-    },
-    paintingElements: (paintingElements, props) => {
-      const PROPERTIES_DTO = [
-        props.dimensionData.gridWidth,
-        props.dimensionData.gridSize,
-        props.dimensionData.axisLength * 2,
-        props.displayTransformations,
-        props.dimensionData.dimensions,
-      ]
-      return paintingElements.map((paintingFace) => {
-        return {
-          points: paintingFace.map((point) => point.position),
-          direction: PaintingInstrustment.prepareDrawingPoints(
-            [
-              [0, 0, 0],
-              PaintingInstrustment.getDirectionVector(
-                paintingFace.map((point) => point.value)
-              ),
-            ],
-            ...PROPERTIES_DTO
-          ),
-        }
-      })
-    },
-    canvasSideLength: (props) => {
-      return props.dimensionData.axisLength * 2 * props.dimensionData.gridWidth
+      const direction = PaintingInstrustment.createDisplayDirectionVector(
+        currentFace,
+        displayData
+      )
+      return direction
     },
   },
 })
