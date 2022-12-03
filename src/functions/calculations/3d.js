@@ -1,11 +1,12 @@
 import {
   degToRad,
-  findAdjacent,
-  findCoordination,
   radToDeg,
+  findAdjacent,
+  findAngle,
+  findLength,
+  toCartesian_fromAngle,
 } from "@/functions/calculations/geometry.js"
 import { scalar, dot } from "@/functions/calculations/vector.firstorder.js"
-import { standardLogger } from "@/functions/commons-utilities.js"
 export {
   createRotator3D,
   createRotator3D_XZ,
@@ -13,7 +14,7 @@ export {
   createTranslator3d,
   findLength3d,
   angleBetween,
-  cross,
+  findAngle3d,
 }
 
 function createRotator3D(angleAroundZ, angleAroundX) {
@@ -36,14 +37,14 @@ function createRotator3D_XZ(angleAroundX, angleAroundZ) {
 }
 
 function rotator3dX(angle) {
-  const yHat = findCoordination(angle, 1)
-  const zHat = findCoordination(angle + 90, 1)
+  const yHat = toCartesian_fromAngle(angle, 1)
+  const zHat = toCartesian_fromAngle(angle + 90, 1)
   return createRotator([1, 0, 0], [0, ...yHat], [0, ...zHat])
 }
 
 function rotator3dZ(angle) {
-  const xHat = findCoordination(angle, 1)
-  const yHat = findCoordination(90 + angle, 1)
+  const xHat = toCartesian_fromAngle(angle, 1)
+  const yHat = toCartesian_fromAngle(90 + angle, 1)
   return createRotator([...xHat, 0], [...yHat, 0], [0, 0, 1])
 }
 function getRotatorVector3d(angle, angleZ) {
@@ -66,6 +67,7 @@ function createTranslator3d([x, y, z]) {
     return addVectors([inputVector, [x, y, z]])
   }
 }
+
 function transformedCoordinate([xHat, yHat, zHat], inputVector) {
   const newX = scalar(xHat, inputVector[0])
   const newY = scalar(yHat, inputVector[1])
@@ -73,17 +75,13 @@ function transformedCoordinate([xHat, yHat, zHat], inputVector) {
   return [newX, newY, newZ]
 }
 function addVectors(vectors) {
-  return vectors.reduce((resultVector, vector) =>
-    resultVector.map((value, i) => value + vector[i])
+  return vectors.reduce(
+    (resultVector, vector) => resultVector.map((value, i) => value + vector[i]),
+    [0, 0, 0]
   )
 }
 
-function cross(vectorU, vectorV) {
-  const [ux, uy, uz] = vectorU
-  const [vx, vy, vz] = vectorV
-  return [uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx]
-}
-function findCoordination3d(angle, angleZ, length, log) {
+function findCoordination3d(angle, angleZ, length) {
   const radian = degToRad(angle)
   const radianZ = degToRad(angleZ)
 
@@ -92,51 +90,26 @@ function findCoordination3d(angle, angleZ, length, log) {
   const xyDiagnal = findAdjacent(angleZ, z) || length
   const result = [xyDiagnal * Math.cos(radian), xyDiagnal * Math.sin(radian), z]
 
-  if (log) {
-    coordinateLogger(
-      { angle, angleZ, length },
-      { radian, radianZ, sinZ, z, xyDiagnal, result },
-      log
-    )
-  }
   return result
 }
+
+function findAngle3d(coordinate) {
+  const xyPlaneAngle = findAngle(coordinate[0], coordinate[1])
+  const xyPlaneLength = findLength(coordinate[0], coordinate[1])
+  const zPlaneAngle = findAngle(xyPlaneLength, coordinate[2])
+  return [xyPlaneAngle, zPlaneAngle]
+}
+
 function angleBetween(vectorU, vectorV) {
   const [lengthU, lengthV] = [
     findLength3d(...vectorU),
     findLength3d(...vectorV),
   ]
   const dotProduct = dot(vectorU, vectorV)
-
   const cos = dotProduct / (lengthU * lengthV)
-  standardLogger({
-    name: "Angle Between",
-    params: { lengthU, lengthV, dotProduct, cos },
-  })
   return radToDeg(Math.acos(cos))
 }
+
 function findLength3d(adjecentLength, oppositeLength, height) {
   return Math.sqrt(adjecentLength ** 2 + oppositeLength ** 2 + height ** 2)
-}
-function coordinateLogger(
-  { angle, angleZ, length },
-  { radian, radianZ, sinZ, z, xyDiagnal, result },
-  header
-) {
-  console.log("Function - FindCoordinate 3D", header)
-  console.log(
-    "Input \n\tAngle1: %i, AngleZ: %i, \n\tLength: %i",
-    angle,
-    angleZ,
-    length
-  )
-  console.log(
-    "\tradian: %f\n\tradianZ: %f\n\tsinZ: %f\n\tz: %f\n\txyDiagnalLength: %f\n\tresult: %f\n\t",
-    radian,
-    radianZ,
-    sinZ,
-    z,
-    xyDiagnal,
-    result
-  )
 }

@@ -1,8 +1,4 @@
-export { toCartesian, perimeter, distance, scalar, add, dot, subtract }
-
-function toCartesian([length, angle]) {
-  return [length * Math.cos(angle), length * Math.sin(angle)]
-}
+export { isOrigin, perimeter, distance, scalar, add, dot, subtract, cross }
 
 function dot(vectorU, vectorV) {
   return vectorU.reduce(
@@ -32,4 +28,14 @@ function add(vectorU, vectorV) {
 
 function scalar(vector, scalar) {
   return vector.map((coordination) => coordination * scalar)
+}
+
+function cross(vectorU, vectorV) {
+  const [ux, uy, uz] = vectorU
+  const [vx, vy, vz] = vectorV
+  return [uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx]
+}
+
+function isOrigin(coordinate) {
+  return coordinate.every((v) => v === 0)
 }

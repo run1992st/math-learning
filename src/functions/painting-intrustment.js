@@ -1,5 +1,10 @@
-import { isOrigin } from "@/functions/vector-utilities"
-import { createTranslator3d } from "@/functions/calculations/3d.js"
+import {
+  isOrigin,
+  translate3d,
+  add,
+  scalar,
+} from "@/functions/vector-utilities"
+// import { createTranslator3d } from "@/functions/calculations/3d.js"
 import { getShade, getDirectionVector } from "@/functions/painting/shader.js"
 import { createArrow, createGuideline } from "@/functions/painting/presets.js"
 import {
@@ -17,6 +22,8 @@ export default {
   createDisplayArrow,
   createDisplayGuideline,
   createDisplayDirectionVector,
+  prepareFaces,
+  getDirectionVector,
 }
 
 function prepareFaces(faces, displayData) {
@@ -46,10 +53,16 @@ function createDisplayGuideline(point, displayData) {
   const guidelinesFaces = createGuideline(point)
   return prepareFaces(guidelinesFaces, displayData)
 }
+
 function createDisplayDirectionVector(points, displayData) {
-  // const translator = createTranslator3d(points[0])
-  const directionLine = [[[0, 0, 0], getDirectionVector(points)]]
-  return prepareFaces(directionLine, displayData)
+  const directionVector = getDirectionVector(points)
+  const directionLine = [[0, 0, 0], directionVector]
+  const translateVector = scalar(
+    add(scalar(add(points[0], points[1]), 0.5), points[2]),
+    0.5
+  )
+  const directionLineTranslate = translate3d(translateVector, directionLine)
+  return prepareFaces([directionLineTranslate], displayData)
 }
 
 function paintShapesToCanvas(canvas, elements, drawingOptions) {

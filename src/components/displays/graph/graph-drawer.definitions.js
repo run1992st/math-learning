@@ -1,3 +1,4 @@
+import { computed } from 'vue'
 import PaintingInstrustment from '@/functions/painting-intrustment'
 export default () => ({
   props: {
@@ -24,40 +25,73 @@ export default () => ({
     currentFace: { type: Object, default: null },
   },
   computed: {
-    paintingElements: (paintingFaces, props) => {
-      return paintingFaces.map(({ points, direction }) => ({
-        points: points.map((point) => point.position),
-        direction,
-      }))
-    },
-    drawingElements: (faces) => {
-      return faces.map((element) => {
-        return element.map((point) => point.position)
-      })
-    },
-    drawingArrowElements: (faces) => {
-      return faces
-        .map((element) => {
-          return element.map((point) => point.arrow)
-        })
-        .flat()
-        .flat()
-    },
-    dashedGuideline(currentPoint, displayData) {
-      const guideline = PaintingInstrustment.createDisplayGuideline(
-        currentPoint,
-        displayData
-      )
-      return guideline
-    },
-    directionVector(currentFace, displayData) {
-      if (!currentFace || !currentFace.length || currentFace.length < 3)
-        return []
-      const direction = PaintingInstrustment.createDisplayDirectionVector(
-        currentFace,
-        displayData
-      )
-      return direction
-    },
+    drawingPoints: (props) =>
+      computed(() => getters.drawingPoints(props.drawingFaces)),
+    paintingElements: (props) =>
+      computed(() => getters.paintingElements(props.drawingFaces)),
+    drawingElements: (props) =>
+      computed(() => {
+        const drawingPoints = props.drawingFaces.map(({ points }) => points)
+        const drawingFaces = getters.drawingFaces(drawingPoints)
+        const drawingArrow = getters.drawingArrowElements(drawingPoints)
+        return [
+          ...drawingFaces,
+          ...(props.drawingOptions.arrow ? drawingArrow : []),
+        ]
+      }),
+    dashedGuideline: (props) =>
+      computed(() =>
+        getters.dashedGuideline(props.currentPoint, props.displayData)
+      ),
+    directionVector: (props) =>
+      computed(() =>
+        getters.directionVector(props.currentFace, props.displayData)
+      ),
+    faceOverlay: (props) =>
+      computed(() => getters.faceOverlay(props.currentFace, props.displayData)),
   },
 })
+
+const getters = {
+  drawingPoints: (drawingFaces) => {
+    const points = drawingFaces.map(({ points }) => points)
+    return points
+  },
+  paintingElements: (paintingFaces) => {
+    return paintingFaces.map(({ points, direction }) => ({
+      points: points.map((point) => point.position),
+      direction,
+    }))
+  },
+  drawingFaces: (faces) => {
+    return faces.map((element) => {
+      return element.map((point) => point.position)
+    })
+  },
+  drawingArrowElements: (faces) => {
+    return faces
+      .map((element) => {
+        return element.map((point) => point.arrow)
+      })
+      .flat()
+      .flat()
+  },
+  dashedGuideline(currentPoint, displayData) {
+    const guideline = PaintingInstrustment.createDisplayGuideline(
+      currentPoint,
+      displayData
+    )
+    return guideline
+  },
+  directionVector(currentFace, displayData) {
+    if (!currentFace || !currentFace.length || currentFace.length < 3) return []
+    const direction = PaintingInstrustment.createDisplayDirectionVector(
+      currentFace,
+      displayData
+    )
+    return direction
+  },
+  faceOverlay(currentFace, displayData) {
+    return PaintingInstrustment.prepareFaces([currentFace], displayData)
+  },
+}

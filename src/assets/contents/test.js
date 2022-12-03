@@ -1,5 +1,7 @@
 import { axisGuide, arrowHead } from '@/functions/painting/models.js'
 import { scalar } from '@/functions/vector-utilities'
+import { ARROW_HEAD_BASE } from '@/functions/constants.json'
+
 export default {
   lists: [
     {
@@ -14,12 +16,13 @@ export default {
   debugFunctions() {
     return [
       () => {
-        const arrow = arrowHead().map((face) =>
+        const head = arrowHead().map((face) =>
           face.map((point) => scalar(point, 20))
         )
+        const base = ARROW_HEAD_BASE.map((coordinate) => scalar(coordinate, 10))
         return {
           dimensions: 3,
-          drawPoints: [...arrow],
+          drawPoints: [...head],
           drawStyle: 'closed',
           shading: ['red'],
         }

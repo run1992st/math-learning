@@ -6,75 +6,42 @@
   const drawingCanvas = ref()
   const guidelineCanvas = ref()
   const arrowCanvas = ref()
+  const directionCanvas = ref()
+  const overlayCanvas = ref()
 
   const componentsOptions = GraphDrawerDefinition()
   const props = defineProps(GraphDrawerDefinition().props)
 
-  const {
-    paintingElements: paintingElementsGetter,
-    drawingElements: drawingElementsGetter,
-    drawingArrowElements: drawingArrowElementsGetter,
-    dashedGuideline: dashedGuidelineGetter,
-    directionVector: directionVectorGetter,
-  } = componentsOptions.computed
-
-  const drawingPoints = computed(() => {
-    const points = props.drawingFaces.map(({ points }) => points)
-    return points
-  })
-  const paintingElements = computed(() =>
-    paintingElementsGetter(props.drawingFaces, props)
-  )
-  const drawingElements = computed(() => {
-    return [
-      ...drawingElementsGetter(drawingPoints.value),
-      ...(props.drawingOptions.arrow
-        ? drawingArrowElementsGetter(drawingPoints.value)
-        : []),
-    ]
-  })
-
-  const temporaryElements = computed(() => {
-    const directionVector = directionVectorGetter(
-      props.currentFace,
-      props.displayData
-    )
-    const dashedGuideline = dashedGuidelineGetter(
-      props.currentPoint,
-      props.displayData
-    )
-    return { directionVector, dashedGuideline }
-  })
+  const paintingElements = componentsOptions.computed.paintingElements(props)
+  const drawingElements = componentsOptions.computed.drawingElements(props)
+  const directionVector = componentsOptions.computed.directionVector(props)
+  const dashedGuideline = componentsOptions.computed.dashedGuideline(props)
+  const faceOverlay = componentsOptions.computed.faceOverlay(props)
 
   onUpdated(() => {
     clearCanvas(guidelineCanvas.value)
     clearCanvas(arrowCanvas.value)
-    if (
-      !props.drawingOptions.drawPoints ||
-      !props.drawingOptions.drawPoints.length ||
-      !props.drawingFaces ||
-      !props.drawingFaces.length
+    if (!props.drawingFaces || !props.drawingFaces.length) return
+    drawElementsToCanvas(
+      drawingCanvas.value,
+      props.drawingOptions.fill
+        ? paintingElements.value
+        : drawingElements.value,
+      props.drawingOptions.drawStyle,
+      props.drawingOptions.fill ? '#2288ee' : ''
     )
-      return
-    drawElementsToCanvas(drawingCanvas.value, drawingElements.value)
     if (props.currentPoint) {
       drawElementsToCanvas(
         guidelineCanvas.value,
-        temporaryElements.value.dashedGuideline,
+        dashedGuideline.value,
         'dashed'
       )
+      drawElementsToCanvas(directionCanvas.value, directionVector.value, 'line')
       drawElementsToCanvas(
-        guidelineCanvas.value,
-        temporaryElements.value.directionVector,
-        'line'
-      )
-    }
-    if (props.drawingOptions.fill) {
-      drawElementsToCanvas(
-        drawingCanvas.value,
-        paintingElements.value, // TODO
-        'closed',
-        '#2288ee'
+        overlayCanvas.value,
+        faceOverlay.value,
+        'line',
+        '#22aaee'
       )
     }
   })
@@ -83,7 +50,7 @@
     PaintingInstrustment.paintShapesToCanvas(canvas, drawElements, {
       canvasSideLength: props.displayData.tableWidth,
       drawStyle: drawStyle || props.drawingOptions.drawStyle,
-      lineColor: 'random',
+      lineColor: fillColor ? '' : 'random',
       fillColor,
     })
   }
@@ -104,6 +71,14 @@
       class="points-reference"
       ref="arrowCanvas"
     ></canvas>
+    <canvas
+      class="points-reference --direction"
+      ref="directionCanvas"
+    ></canvas>
+    <canvas
+      class="points-reference"
+      ref="overlayCanvas"
+    ></canvas>
   </div>
 </template>
 
@@ -118,6 +93,9 @@
     .points-reference {
       position: absolute;
       inset: 0 0 0 0;
+      &.\--direction {
+        z-index: 5;
+      }
     }
   }
 </style>

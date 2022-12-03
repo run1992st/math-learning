@@ -1,4 +1,5 @@
-import { angleBetween, cross } from '@/functions/calculations/3d.js'
+import { cross } from '@/functions/vector-utilities.js'
+import { angleBetween } from '@/functions/calculations/3d.js'
 
 export default () => [
   () => {

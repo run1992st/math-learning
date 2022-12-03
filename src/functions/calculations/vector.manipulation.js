@@ -1,39 +1,34 @@
-import { getInteratable } from "@/functions/commons-utilities.js"
 import {
-  findCoordination,
-  radToDeg,
+  toCartesian_fromAngle,
+  findLength3d,
 } from "@/functions/calculations/geometry.js"
+import { scalar } from "@/functions/calculations/vector.firstorder.js"
 
 import {
+  createTranslator3d,
   createRotator3D,
   getRotatorVector3d,
 } from "@/functions/calculations/3d.js"
 
 export {
-  createPolygon,
   createSkewer,
   createRotator,
   translate2d,
+  translate3d,
   rotate2d,
   rotate3d,
   getRotatorVector,
   getRotatorVector3d,
-}
-
-function createPolygon(length, sides) {
-  const perSectionRadian = (2 * Math.PI) / sides
-  const sidesInterable = getInteratable(sides)
-  return sidesInterable.map((side) => {
-    const coordination = findCoordination(
-      radToDeg(perSectionRadian) * (side + 1),
-      length
-    )
-    return coordination
-  })
+  toUnit,
 }
 
 function translate2d(translateVector, originalVectors) {
   const vectorTranslator = createTranslator(translateVector)
+  const translatedVectors = originalVectors.map(vectorTranslator)
+  return translatedVectors
+}
+function translate3d(translateVector, originalVectors) {
+  const vectorTranslator = createTranslator3d(translateVector)
   const translatedVectors = originalVectors.map(vectorTranslator)
   return translatedVectors
 }
@@ -42,7 +37,6 @@ function rotate2d(angle, originalVectors) {
   const rotatedVectors = originalVectors.map(vectorRotator)
   return rotatedVectors
 }
-
 function rotate3d(angleXY, angleZ, originalVectors) {
   const vectorRotator = createRotator3D(angleXY, angleZ)
   const rotatedVectors = originalVectors.map(vectorRotator)
@@ -65,15 +59,15 @@ function createRotator(angle) {
 }
 
 function getRotatorVector(angle) {
-  const xRotatorVector = findCoordination(angle, 1)
-  const yRotatorVector = findCoordination(90 + angle, 1)
+  const xRotatorVector = toCartesian_fromAngle(angle, 1)
+  const yRotatorVector = toCartesian_fromAngle(90 + angle, 1)
 
   return { xRotatorVector, yRotatorVector }
 }
 
 function createSkewer(angleX, angleY) {
-  const skewXVector = findCoordination(angleX, 1)
-  const skewYVector = findCoordination(90 + angleY, 1)
+  const skewXVector = toCartesian_fromAngle(angleX, 1)
+  const skewYVector = toCartesian_fromAngle(90 + angleY, 1)
 
   const xRotatorVector = [1, 1 * (skewXVector[1] / skewXVector[0])]
   const yRotatorVector = [1 * (skewYVector[0] / skewYVector[1]), 1]
@@ -92,4 +86,9 @@ function createSkewer(angleX, angleY) {
 function createTranslator(modifierVector) {
   return (inputVector) =>
     inputVector.map((point, index) => point + modifierVector[index])
+}
+
+// TEMP
+function toUnit(vector) {
+  return scalar(vector, 1 / findLength3d(...vector))
 }

@@ -1,19 +1,10 @@
-import {
-  scalar,
-  isOrigin,
-  cross,
-  toUnit,
-  subtract,
-} from "@/functions/vector-utilities"
-import {
-  createRotator3D_XZ,
-  createTranslator3d,
-} from "@/functions/calculations/3d.js"
+import { scalar, cross, toUnit, subtract } from "@/functions/vector-utilities"
 
 export { getShade, getDirectionVector }
 
-function getShade(face, color) {
-  return color
+function getShade(direction, color) {
+  const isVisible = direction[2] >= 0
+  return isVisible || !direction ? color : ""
 }
 
 function getDirectionVector(face) {

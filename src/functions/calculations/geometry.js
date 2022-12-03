@@ -1,24 +1,24 @@
 export {
-  defaultExport as default,
-  findCoordination,
+  toCartesian_fromAngle,
+  toCartesian_fromRadian,
   radToDeg,
   degToRad,
   findAngle,
   findAdjacent,
   findOpposite,
   findLength,
-}
-const defaultExport = {
-  findCoordination,
-  radToDeg,
-  findAdjacent,
-  findOpposite,
+  findLength3d,
 }
 
-function findCoordination(angle, length) {
+function toCartesian_fromAngle(angle, length) {
   const radian = degToRad(angle)
+  return toCartesian_fromRadian(radian, length)
+}
+
+function toCartesian_fromRadian(radian, length) {
   return [length * Math.cos(radian), length * Math.sin(radian)]
 }
+
 function findLength(adjecentLength, oppositeLength) {
   return Math.sqrt(adjecentLength ** 2 + oppositeLength ** 2)
 }
@@ -39,6 +39,10 @@ function findOpposite(angle, adjecentLength) {
   const radian = degToRad(angle)
   const sin = Math.sin(radian)
   return adjecentLength * sin
+}
+
+function findLength3d(adjecentLength, oppositeLength, height) {
+  return Math.sqrt(adjecentLength ** 2 + oppositeLength ** 2 + height ** 2)
 }
 
 function degToRad(degrees) {

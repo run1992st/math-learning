@@ -9,21 +9,13 @@
   const props = defineProps(DisplayOptionsDefinitions().props)
   const currentPoint = ref(null)
   const currentFace = ref(null)
-  const {
-    gridsDisplayData: gridsDisplayDataGetter,
-    drawingOptions: drawingOptionsGetter,
-    drawingFaces: drawingFacesGetter,
-  } = componentsOptions.computed
 
-  const gridsDisplayData = computed(() =>
-    gridsDisplayDataGetter(props.displayOptions, props.dimensions)
+  const gridsDisplayData = componentsOptions.computed.gridsDisplayData(props)
+  const drawingFaces = componentsOptions.computed.drawingFaces(
+    props,
+    gridsDisplayData
   )
-  const drawingFaces = computed(() =>
-    drawingFacesGetter(props.displayOptions, gridsDisplayData.value)
-  )
-  const drawingOptions = computed(() =>
-    drawingOptionsGetter(props.displayOptions)
-  )
+  const drawingOptions = componentsOptions.computed.drawingOptions(props)
   const tableWidth = computed(() => gridsDisplayData.value.tableWidth)
 </script>
 

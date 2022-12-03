@@ -1,6 +1,10 @@
-import VectorUtilities from '@/functions/vector-utilities.js'
+import VectorUtilities, {
+  toCartesian_fromAngle,
+  toCartesian_fromRadian,
+} from '@/functions/vector-utilities.js'
 import { getInteratable } from '@/functions/commons-utilities.js'
 import { radToDeg } from '@/functions/calculations/geometry.js'
+import { createPolygon } from '@/functions/painting/presets.js'
 import { DINO_VECTORS } from './chapter2.data.js'
 
 export default () => ({
@@ -83,7 +87,7 @@ export default () => ({
   ],
   trigonmetry: [
     () => {
-      const points = [VectorUtilities.findComponents(125, 8.5)]
+      const points = [toCartesian_fromAngle(125, 8.5)]
       return {
         points,
         drawPoints: [[[0, 0], ...points]],
@@ -97,7 +101,7 @@ export default () => ({
           Math.cos((5 * index * Math.PI) / 500),
           (2 * Math.PI * index) / 1000,
         ])
-        .map(VectorUtilities.toCartesian)
+        .map(([length, radian]) => toCartesian_fromRadian(radian, length))
       return {
         points: [],
         drawPoints: [ONE_THOUSAND_POINTS],
@@ -116,7 +120,7 @@ export default () => ({
     },
     () => {
       const POLYGON_SIDE = 7
-      const polygon = VectorUtilities.createPolygon(4, POLYGON_SIDE)
+      const polygon = createPolygon(4, POLYGON_SIDE)
       return {
         points: polygon,
         drawPoints: [polygon],
